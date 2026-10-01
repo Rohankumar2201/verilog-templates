@@ -1,0 +1,482 @@
+[
+ {
+  "name": "comparator",
+  "filename": "comparator.v",
+  "category": "Combinational",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Documented that the compare is unsigned.",
+  "code": "// Unsigned magnitude comparator\nmodule comparator #(\n    parameter WIDTH = 8\n)(\n    input  [WIDTH-1:0] a, b,\n    output             eq, gt, lt\n);\n    assign eq = (a == b);\n    assign gt = (a >  b);\n    assign lt = (a <  b);\nendmodule\n"
+ },
+ {
+  "name": "decoder_3to8",
+  "filename": "decoder_3to8.v",
+  "category": "Combinational",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Reformatted.",
+  "code": "module decoder_3to8 (\n    input  [2:0] a,\n    input        en,\n    output [7:0] y\n);\n    assign y = en ? (8'b0000_0001 << a) : 8'b0000_0000;\nendmodule\n"
+ },
+ {
+  "name": "demux_1to4",
+  "filename": "demux_1to4.v",
+  "category": "Combinational",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct (no latch: y is defaulted to 0 first).",
+  "notes": "Logic was correct (no latch: y is defaulted to 0 first). Reformatted.",
+  "code": "module demux_1to4 (\n    input            din,\n    input      [1:0] sel,\n    output reg [3:0] y\n);\n    always @* begin\n        y      = 4'b0000;\n        y[sel] = din;\n    end\nendmodule\n"
+ },
+ {
+  "name": "full_adder",
+  "filename": "full_adder.v",
+  "category": "Combinational",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Original ({cout,sum}=a+b+cin) was correct.",
+  "notes": "Original ({cout,sum}=a+b+cin) was correct. Rewritten as explicit XOR/majority equations so it is obviously gate-level.",
+  "code": "module full_adder (\n    input  a, b, cin,\n    output sum, cout\n);\n    assign sum  = a ^ b ^ cin;\n    assign cout = (a & b) | (cin & (a ^ b));\nendmodule\n"
+ },
+ {
+  "name": "half_adder",
+  "filename": "half_adder.v",
+  "category": "Combinational",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Reformatted.",
+  "code": "module half_adder (\n    input  a, b,\n    output sum, carry\n);\n    assign sum   = a ^ b;\n    assign carry = a & b;\nendmodule\n"
+ },
+ {
+  "name": "mux_2to1",
+  "filename": "mux_2to1.v",
+  "category": "Combinational",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Reformatted.",
+  "code": "module mux_2to1 #(\n    parameter WIDTH = 1\n)(\n    input  [WIDTH-1:0] a, b,\n    input              sel,\n    output [WIDTH-1:0] y\n);\n    assign y = sel ? b : a;\nendmodule\n"
+ },
+ {
+  "name": "mux_4to1",
+  "filename": "mux_4to1.v",
+  "category": "Combinational",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Rewritten as a case statement (clearer, same behaviour).",
+  "code": "module mux_4to1 #(\n    parameter WIDTH = 1\n)(\n    input      [WIDTH-1:0] a, b, c, d,\n    input      [1:0]       sel,\n    output reg [WIDTH-1:0] y\n);\n    always @* begin\n        case (sel)\n            2'd0:    y = a;\n            2'd1:    y = b;\n            2'd2:    y = c;\n            default: y = d;\n        endcase\n    end\nendmodule\n"
+ },
+ {
+  "name": "priority_encoder",
+  "filename": "priority_encoder.v",
+  "category": "Combinational",
+  "language": "Verilog",
+  "status": "IMPROVED",
+  "description": "Behaviour unchanged (highest set bit wins).",
+  "notes": "Behaviour unchanged (highest set bit wins). Fixed an implicit 32-to-N bit truncation that lint tools flag; documented that WIDTH must be >= 2 (WIDTH=1 makes a zero-width index).",
+  "code": "// Highest set bit wins. WIDTH must be >= 2.\nmodule priority_encoder #(\n    parameter WIDTH = 8\n)(\n    input      [WIDTH-1:0]         in,\n    output reg [$clog2(WIDTH)-1:0] index,\n    output reg                     valid\n);\n    integer i;\n    always @* begin\n        index = 0;\n        valid = 1'b0;\n        for (i = 0; i < WIDTH; i = i + 1)\n            if (in[i]) begin        // later (higher) i overrides earlier ones\n                index = i[$clog2(WIDTH)-1:0];\n                valid = 1'b1;\n            end\n    end\nendmodule\n"
+ },
+ {
+  "name": "barrel_shifter",
+  "filename": "barrel_shifter.v",
+  "category": "Arithmetic",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct (logical shift).",
+  "notes": "Logic was correct (logical shift). Documented that WIDTH must be a power of two.",
+  "code": "// Logical barrel shifter. WIDTH must be a power of two (>= 2).\n// dir = 0: shift left, dir = 1: shift right\nmodule barrel_shifter #(\n    parameter WIDTH = 8\n)(\n    input  [WIDTH-1:0]         data,\n    input  [$clog2(WIDTH)-1:0] shamt,\n    input                      dir,\n    output [WIDTH-1:0]         y\n);\n    assign y = dir ? (data >> shamt) : (data << shamt);\nendmodule\n"
+ },
+ {
+  "name": "carry_lookahead_adder",
+  "filename": "carry_lookahead_adder.v",
+  "category": "Arithmetic",
+  "language": "Verilog",
+  "status": "FIXED",
+  "description": "Original was NOT lookahead: c[i+1] was computed from c[i], i.e. a ripple chain.",
+  "notes": "Original was NOT lookahead: c[i+1] was computed from c[i], i.e. a ripple chain. Each carry is now a flat function of p, g and cin (the real CLA equations). Exhaustively verified for 4 and 8 bits.",
+  "code": "// Carry-lookahead adder: every carry is a flat function of p, g and cin\n// (no carry ripples through the previous stage).\n//   c[i+1] = g[i] | p[i]g[i-1] | ... | p[i]..p[1]g[0] | p[i]..p[0]cin\nmodule carry_lookahead_adder #(\n    parameter WIDTH = 4\n)(\n    input  [WIDTH-1:0] a, b,\n    input              cin,\n    output [WIDTH-1:0] sum,\n    output             cout\n);\n    wire [WIDTH-1:0] p = a ^ b;\n    wire [WIDTH-1:0] g = a & b;\n    reg  [WIDTH:0]   c;\n    integer i, j, k;\n    reg term;\n    always @* begin\n        c[0] = cin;\n        for (i = 0; i < WIDTH; i = i + 1) begin\n            c[i+1] = g[i];\n            for (j = 0; j < i; j = j + 1) begin      // g[j] propagated through p[j+1..i]\n                term = g[j];\n                for (k = j + 1; k <= i; k = k + 1) term = term & p[k];\n                c[i+1] = c[i+1] | term;\n            end\n            term = cin;                               // cin propagated through p[0..i]\n            for (k = 0; k <= i; k = k + 1) term = term & p[k];\n            c[i+1] = c[i+1] | term;\n        end\n    end\n    assign sum  = p ^ c[WIDTH-1:0];\n    assign cout = c[WIDTH];\nendmodule\n"
+ },
+ {
+  "name": "leading_zero_detector",
+  "filename": "leading_zero_detector.v",
+  "category": "Arithmetic",
+  "language": "Verilog",
+  "status": "IMPROVED",
+  "description": "Worked in simulation but modified the loop variable inside the loop (i=-1), which is poor/unsafe style for synthesis.",
+  "notes": "Worked in simulation but modified the loop variable inside the loop (i=-1), which is poor/unsafe style for synthesis. Rewritten with a 'found' flag. Exhaustively verified for 8 bits.",
+  "code": "// Counts leading zeros from the MSB. count = WIDTH when in == 0.\nmodule leading_zero_detector #(\n    parameter WIDTH = 8\n)(\n    input      [WIDTH-1:0]           in,\n    output reg [$clog2(WIDTH+1)-1:0] count,\n    output                           zero\n);\n    integer i;\n    reg     found;\n    always @* begin\n        count = 0;\n        found = 1'b0;\n        for (i = WIDTH-1; i >= 0; i = i - 1) begin\n            if (in[i]) found = 1'b1;\n            else if (!found) count = count + 1'b1;\n        end\n    end\n    assign zero = ~|in;\nendmodule\n"
+ },
+ {
+  "name": "mac_unit",
+  "filename": "mac_unit.sv",
+  "category": "Arithmetic",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "Accumulator width is now a parameter (ACC_W) with an explicit cast, and a synchronous clear (clr) was added.",
+  "notes": "Accumulator width is now a parameter (ACC_W) with an explicit cast, and a synchronous clear (clr) was added. Verified against a signed reference model including -32768 x -32768.",
+  "code": "// Signed multiply-accumulate. ACC_W defaults to 2*WIDTH+1; add guard bits\n// (larger ACC_W) if you accumulate many worst-case products.\nmodule mac_unit #(\n    parameter int WIDTH = 16,\n    parameter int ACC_W = 2*WIDTH + 1\n)(\n    input  logic                    clk, rst,\n    input  logic                    clr,      // synchronous accumulator clear\n    input  logic                    en,\n    input  logic signed [WIDTH-1:0] a, b,\n    output logic signed [ACC_W-1:0] y\n);\n    logic signed [2*WIDTH-1:0] prod;\n    assign prod = a * b;\n    always_ff @(posedge clk) begin\n        if (rst || clr) y <= '0;\n        else if (en)    y <= y + ACC_W'(prod);\n    end\nendmodule\n"
+ },
+ {
+  "name": "ripple_carry_adder",
+  "filename": "ripple_carry_adder.v",
+  "category": "Arithmetic",
+  "language": "Verilog",
+  "status": "IMPROVED",
+  "description": "Original was a behavioural '+', not a ripple-carry structure.",
+  "notes": "Original was a behavioural '+', not a ripple-carry structure. Now built from chained full_adder cells (needs combinational/full_adder.v).",
+  "code": "// Structural ripple-carry adder built from full adders\nmodule ripple_carry_adder #(\n    parameter WIDTH = 8\n)(\n    input  [WIDTH-1:0] a, b,\n    input              cin,\n    output [WIDTH-1:0] sum,\n    output             cout\n);\n    wire [WIDTH:0] c;\n    assign c[0] = cin;\n    genvar i;\n    generate\n        for (i = 0; i < WIDTH; i = i + 1) begin : g_fa\n            full_adder fa (.a(a[i]), .b(b[i]), .cin(c[i]),\n                           .sum(sum[i]), .cout(c[i+1]));\n        end\n    endgenerate\n    assign cout = c[WIDTH];\nendmodule\n"
+ },
+ {
+  "name": "saturating_adder",
+  "filename": "saturating_adder.v",
+  "category": "Arithmetic",
+  "language": "Verilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Made the zero-extension explicit; documented that it is unsigned saturation.",
+  "code": "// Unsigned saturating adder: clamps to all-ones on overflow\nmodule saturating_adder #(\n    parameter WIDTH = 8\n)(\n    input      [WIDTH-1:0] a, b,\n    output reg [WIDTH-1:0] y\n);\n    reg [WIDTH:0] tmp;\n    always @* begin\n        tmp = {1'b0, a} + {1'b0, b};\n        y   = tmp[WIDTH] ? {WIDTH{1'b1}} : tmp[WIDTH-1:0];\n    end\nendmodule\n"
+ },
+ {
+  "name": "clock_divider",
+  "filename": "clock_divider.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Original toggled every DIV cycles, so DIV=2 gave a clock 4x slower (period 4), not 2.",
+  "notes": "Original toggled every DIV cycles, so DIV=2 gave a clock 4x slower (period 4), not 2. Measured on the original: period = 4 input cycles. Now the output period is exactly DIV input cycles (high time floor(DIV/2)); DIV < 2 passes the clock through.",
+  "code": "// Divides clk by DIV (output period = DIV input cycles), glitch-free\n// (registered output). High time = floor(DIV/2) cycles, so odd DIV gives\n// a duty cycle slightly below 50%. DIV < 2 passes the clock through.\n// NOTE: on FPGAs prefer a clock-enable or a PLL/MMCM over a fabric-divided clock.\nmodule clock_divider #(\n    parameter int DIV = 2\n)(\n    input  logic clk, rst,\n    output logic clk_out\n);\n    generate\n        if (DIV < 2) begin : g_bypass\n            assign clk_out = clk;\n        end else begin : g_div\n            localparam int W    = $clog2(DIV);\n            localparam int HIGH = DIV / 2;\n            logic [W-1:0] count;\n            always_ff @(posedge clk) begin\n                if (rst) begin\n                    count   <= '0;\n                    clk_out <= 1'b0;\n                end else if (count == W'(DIV - 1)) begin\n                    count   <= '0;\n                    clk_out <= 1'b1;\n                end else begin\n                    count <= count + 1'b1;\n                    if (count == W'(HIGH - 1)) clk_out <= 1'b0;\n                end\n            end\n        end\n    endgenerate\nendmodule\n"
+ },
+ {
+  "name": "dff",
+  "filename": "dff.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Reformatted.",
+  "code": "module dff (\n    input  logic clk, rst,\n    input  logic d,\n    output logic q\n);\n    always_ff @(posedge clk) begin\n        if (rst) q <= 1'b0;\n        else     q <= d;\n    end\nendmodule\n"
+ },
+ {
+  "name": "edge_detector",
+  "filename": "edge_detector.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Documented that outputs are registered (one clock of latency) and that signal_in must already be synchronous to clk.",
+  "code": "// Registered edge detector. rising/falling are 1-cycle pulses that appear\n// one clock after the edge is sampled. signal_in must be synchronous to clk\n// (pass asynchronous inputs through two_flop_synchronizer first).\nmodule edge_detector (\n    input  logic clk, rst,\n    input  logic signal_in,\n    output logic rising, falling\n);\n    logic prev;\n    always_ff @(posedge clk) begin\n        if (rst) begin\n            prev    <= 1'b0;\n            rising  <= 1'b0;\n            falling <= 1'b0;\n        end else begin\n            rising  <=  signal_in & ~prev;\n            falling <= ~signal_in &  prev;\n            prev    <=  signal_in;\n        end\n    end\nendmodule\n"
+ },
+ {
+  "name": "jk_flip_flop",
+  "filename": "jk_flip_flop.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Case now lists all four input combinations explicitly.",
+  "code": "module jk_flip_flop (\n    input  logic clk, rst,\n    input  logic j, k,\n    output logic q\n);\n    always_ff @(posedge clk) begin\n        if (rst) q <= 1'b0;\n        else begin\n            case ({j, k})\n                2'b00:   q <= q;     // hold\n                2'b01:   q <= 1'b0;  // reset\n                2'b10:   q <= 1'b1;  // set\n                2'b11:   q <= ~q;    // toggle\n            endcase\n        end\n    end\nendmodule\n"
+ },
+ {
+  "name": "johnson_counter",
+  "filename": "johnson_counter.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "Logic was correct for WIDTH >= 2; WIDTH=1 produced an illegal part-select.",
+  "notes": "Logic was correct for WIDTH >= 2; WIDTH=1 produced an illegal part-select. Added an elaboration check.",
+  "code": "// Twisted-ring counter: 2*WIDTH states. WIDTH must be >= 2.\nmodule johnson_counter #(\n    parameter int WIDTH = 4\n)(\n    input  logic             clk, rst, en,\n    output logic [WIDTH-1:0] q\n);\n    initial if (WIDTH < 2) $error(\"johnson_counter: WIDTH must be >= 2\");\n    always_ff @(posedge clk) begin\n        if (rst)     q <= '0;\n        else if (en) q <= {q[WIDTH-2:0], ~q[WIDTH-1]};\n    end\nendmodule\n"
+ },
+ {
+  "name": "register",
+  "filename": "register.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Reformatted.",
+  "code": "module register #(\n    parameter int WIDTH = 8\n)(\n    input  logic             clk, rst, en,\n    input  logic [WIDTH-1:0] d,\n    output logic [WIDTH-1:0] q\n);\n    always_ff @(posedge clk) begin\n        if (rst)     q <= '0;\n        else if (en) q <= d;\n    end\nendmodule\n"
+ },
+ {
+  "name": "ring_counter",
+  "filename": "ring_counter.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "Logic was correct for WIDTH >= 2; WIDTH=1 produced an illegal part-select.",
+  "notes": "Logic was correct for WIDTH >= 2; WIDTH=1 produced an illegal part-select. Added an elaboration check.",
+  "code": "// One-hot ring counter: WIDTH states. WIDTH must be >= 2.\nmodule ring_counter #(\n    parameter int WIDTH = 4\n)(\n    input  logic             clk, rst, en,\n    output logic [WIDTH-1:0] q\n);\n    initial if (WIDTH < 2) $error(\"ring_counter: WIDTH must be >= 2\");\n    always_ff @(posedge clk) begin\n        if (rst)     q <= {{(WIDTH-1){1'b0}}, 1'b1};\n        else if (en) q <= {q[WIDTH-2:0], q[WIDTH-1]};\n    end\nendmodule\n"
+ },
+ {
+  "name": "shift_register",
+  "filename": "shift_register.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Original had a parallel_in port that was never used.",
+  "notes": "Original had a parallel_in port that was never used. Added a 'load' input (priority over shift) and a serial_out output. WIDTH >= 2 is now checked at elaboration.",
+  "code": "// Serial-in / parallel-out shift register with parallel load (left shift).\n// load has priority over shift. WIDTH must be >= 2.\nmodule shift_register #(\n    parameter int WIDTH = 8\n)(\n    input  logic             clk, rst, en,\n    input  logic             load,\n    input  logic             serial_in,\n    input  logic [WIDTH-1:0] parallel_in,\n    output logic [WIDTH-1:0] q,\n    output logic             serial_out\n);\n    initial if (WIDTH < 2) $error(\"shift_register: WIDTH must be >= 2\");\n    always_ff @(posedge clk) begin\n        if (rst)        q <= '0;\n        else if (load)  q <= parallel_in;\n        else if (en)    q <= {q[WIDTH-2:0], serial_in};\n    end\n    assign serial_out = q[WIDTH-1];\nendmodule\n"
+ },
+ {
+  "name": "switch_debouncer",
+  "filename": "switch_debouncer.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "The asynchronous button went straight into synchronous logic (metastability risk).",
+  "notes": "The asynchronous button went straight into synchronous logic (metastability risk). Added a 2-flop synchronizer and removed the redundant 'sample' register. Verified: 4-cycle glitch rejected, stable press accepted, release accepted.",
+  "code": "// Debouncer with built-in 2-flop synchronizer for the asynchronous button.\n// The output changes only after the input has been stable for COUNT_MAX cycles\n// (default 500000 = 5 ms at 100 MHz).\nmodule switch_debouncer #(\n    parameter int COUNT_MAX = 500000\n)(\n    input  logic clk, rst,\n    input  logic button,\n    output logic debounced\n);\n    localparam int W = (COUNT_MAX < 2) ? 1 : $clog2(COUNT_MAX);\n    logic [1:0]   sync;\n    logic         btn;\n    logic [W-1:0] count;\n    assign btn = sync[1];\n    always_ff @(posedge clk) begin\n        if (rst) begin\n            sync      <= 2'b00;\n            count     <= '0;\n            debounced <= 1'b0;\n        end else begin\n            sync <= {sync[0], button};\n            if (btn == debounced)\n                count <= '0;                       // input agrees with output: restart\n            else if (count == W'(COUNT_MAX - 1)) begin\n                debounced <= btn;                  // stable long enough: accept\n                count     <= '0;\n            end else\n                count <= count + 1'b1;\n        end\n    end\nendmodule\n"
+ },
+ {
+  "name": "t_flip_flop",
+  "filename": "t_flip_flop.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Reformatted.",
+  "code": "module t_flip_flop (\n    input  logic clk, rst,\n    input  logic t,\n    output logic q\n);\n    always_ff @(posedge clk) begin\n        if (rst)    q <= 1'b0;\n        else if (t) q <= ~q;\n    end\nendmodule\n"
+ },
+ {
+  "name": "up_down_counter",
+  "filename": "up_down_counter.sv",
+  "category": "Sequential",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct (wraps on over/underflow).",
+  "notes": "Logic was correct (wraps on over/underflow). Reformatted.",
+  "code": "module up_down_counter #(\n    parameter int WIDTH = 8\n)(\n    input  logic             clk, rst, en,\n    input  logic             up,          // 1 = count up, 0 = count down\n    output logic [WIDTH-1:0] q\n);\n    always_ff @(posedge clk) begin\n        if (rst)     q <= '0;\n        else if (en) q <= up ? q + 1'b1 : q - 1'b1;   // wraps naturally\n    end\nendmodule\n"
+ },
+ {
+  "name": "mealy_sequence_detector",
+  "filename": "mealy_sequence_detector.sv",
+  "category": "FSM",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Did not compile under Icarus -g2012 (enum assigned from conditional expressions).",
+  "notes": "Did not compile under Icarus -g2012 (enum assigned from conditional expressions). Rewritten with if/else. Documented the detected sequence (1010) and added an OVERLAP parameter (original was silently non-overlapping). Checked against a reference model, both modes.",
+  "code": "// Mealy detector for the bit sequence 1010 (serial, MSB first).\n// detected is combinational: high in the same cycle the last bit arrives.\n// OVERLAP = 0 : bits of a match cannot start the next match (default)\n// OVERLAP = 1 : 1010101 contains two matches\nmodule mealy_sequence_detector #(\n    parameter bit OVERLAP = 1'b0\n)(\n    input  logic clk, rst,\n    input  logic in_bit,\n    output logic detected\n);\n    typedef enum logic [1:0] {S0, S1, S2, S3} state_t;   // bits matched so far: 0,1,10,101\n    state_t state, next;\n    always_ff @(posedge clk) begin\n        if (rst) state <= S0;\n        else     state <= next;\n    end\n    always_comb begin\n        next     = state;\n        detected = 1'b0;\n        case (state)\n            S0: if (in_bit) next = S1;\n            S1: if (!in_bit) next = S2;\n            S2: begin\n                if (in_bit) next = S3;\n                else        next = S0;\n            end\n            S3: begin\n                if (in_bit) next = S1;\n                else begin\n                    detected = 1'b1;\n                    next     = OVERLAP ? S2 : S0;\n                end\n            end\n            default: next = S0;\n        endcase\n    end\nendmodule\n"
+ },
+ {
+  "name": "moore_sequence_detector",
+  "filename": "moore_sequence_detector.sv",
+  "category": "FSM",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Same compile issue as the Mealy version.",
+  "notes": "Same compile issue as the Mealy version. Documented sequence 1010; added OVERLAP parameter (original was silently non-overlapping). Checked against a reference model, both modes.",
+  "code": "// Moore detector for the bit sequence 1010 (serial, MSB first).\n// detected is registered-state based: high one cycle AFTER the last bit.\n// OVERLAP = 0 (default) / 1 as in mealy_sequence_detector.\nmodule moore_sequence_detector #(\n    parameter bit OVERLAP = 1'b0\n)(\n    input  logic clk, rst,\n    input  logic in_bit,\n    output logic detected\n);\n    typedef enum logic [2:0] {S0, S1, S2, S3, S4} state_t;   // S4 = 1010 matched\n    state_t state, next;\n    always_ff @(posedge clk) begin\n        if (rst) state <= S0;\n        else     state <= next;\n    end\n    always_comb begin\n        next = state;\n        case (state)\n            S0: if (in_bit) next = S1;\n            S1: if (!in_bit) next = S2;\n            S2: begin\n                if (in_bit) next = S3;\n                else        next = S0;\n            end\n            S3: begin\n                if (in_bit) next = S1;\n                else        next = S4;\n            end\n            S4: begin\n                if (in_bit) next = OVERLAP ? S3 : S1;\n                else        next = S0;\n            end\n            default: next = S0;\n        endcase\n    end\n    assign detected = (state == S4);\nendmodule\n"
+ },
+ {
+  "name": "traffic_light_controller",
+  "filename": "traffic_light_controller.sv",
+  "category": "FSM",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Did not compile: several statements per case item without begin/end (syntax error).",
+  "notes": "Did not compile: several statements per case item without begin/end (syntax error). Also every state lasted one clock. Now has GREEN_CYCLES / YELLOW_CYCLES timers; light encoding {green,yellow,red} is documented. Verified exact phase timing and that NS/EW are never active together.",
+  "code": "// Two-road traffic light controller (timed).\n// Light encoding {green, yellow, red}: 3'b100 green, 3'b010 yellow, 3'b001 red.\n// Sequence: NS green -> NS yellow -> EW green -> EW yellow -> ...\n// NS and EW are never green/yellow at the same time. The yellow phase acts\n// as the clearance interval; add an all-red state if your intersection needs one.\nmodule traffic_light_controller #(\n    parameter int GREEN_CYCLES  = 8,\n    parameter int YELLOW_CYCLES = 2\n)(\n    input  logic       clk, rst,\n    output logic [2:0] ns, ew\n);\n    typedef enum logic [1:0] {NS_G, NS_Y, EW_G, EW_Y} state_t;\n    state_t state, next;\n    logic [15:0] timer;\n    logic [15:0] limit;\n    always_comb begin\n        case (state)\n            NS_G:    next = NS_Y;\n            NS_Y:    next = EW_G;\n            EW_G:    next = EW_Y;\n            EW_Y:    next = NS_G;\n            default: next = NS_G;\n        endcase\n        limit = (state == NS_G || state == EW_G) ? 16'(GREEN_CYCLES - 1)\n                                                 : 16'(YELLOW_CYCLES - 1);\n    end\n    always_ff @(posedge clk) begin\n        if (rst) begin\n            state <= NS_G;\n            timer <= '0;\n        end else if (timer == limit) begin\n            state <= next;\n            timer <= '0;\n        end else begin\n            timer <= timer + 1'b1;\n        end\n    end\n    always_comb begin\n        ns = 3'b001;\n        ew = 3'b001;\n        case (state)\n            NS_G:    ns = 3'b100;\n            NS_Y:    ns = 3'b010;\n            EW_G:    ew = 3'b100;\n            EW_Y:    ew = 3'b010;\n            default: ;\n        endcase\n    end\nendmodule\n"
+ },
+ {
+  "name": "dual_port_ram",
+  "filename": "dual_port_ram.sv",
+  "category": "Memory",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Documented read-first behaviour and that same-address dual writes are undefined. Verified with non-power-of-two DEPTH.",
+  "code": "// True dual-port synchronous RAM, single clock, read-first on both ports.\n// If both ports write the same address in the same cycle, port B wins\n// (behaviour is tool/vendor-dependent - avoid it in real designs).\nmodule dual_port_ram #(\n    parameter int WIDTH = 8,\n    parameter int DEPTH = 256\n)(\n    input  logic                     clk,\n    input  logic                     we_a, we_b,\n    input  logic [$clog2(DEPTH)-1:0] addr_a, addr_b,\n    input  logic [WIDTH-1:0]         din_a, din_b,\n    output logic [WIDTH-1:0]         dout_a, dout_b\n);\n    logic [WIDTH-1:0] mem [0:DEPTH-1];\n    always_ff @(posedge clk) begin\n        if (we_a) mem[addr_a] <= din_a;\n        if (we_b) mem[addr_b] <= din_b;\n        dout_a <= mem[addr_a];\n        dout_b <= mem[addr_b];\n    end\nendmodule\n"
+ },
+ {
+  "name": "register_file",
+  "filename": "register_file.sv",
+  "category": "Memory",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "Logic was correct (x0 hard-wired to zero).",
+  "notes": "Logic was correct (x0 hard-wired to zero). Added an optional BYPASS parameter (write-through) which a pipelined RISC-V core usually needs. Both modes verified.",
+  "code": "// Register file with two asynchronous read ports and one synchronous write\n// port. Register 0 is hard-wired to zero (RISC-V x0 convention).\n// BYPASS = 1 forwards write data to a read port when reading the register\n// being written in the same cycle (write-through); BYPASS = 0 returns old data.\nmodule register_file #(\n    parameter int WIDTH  = 32,\n    parameter int REGS   = 32,\n    parameter bit BYPASS = 1'b0\n)(\n    input  logic                     clk, we,\n    input  logic [$clog2(REGS)-1:0]  waddr, raddr1, raddr2,\n    input  logic [WIDTH-1:0]         wdata,\n    output logic [WIDTH-1:0]         rdata1, rdata2\n);\n    logic [WIDTH-1:0] regs [0:REGS-1];\n    always_ff @(posedge clk) begin\n        if (we && waddr != '0) regs[waddr] <= wdata;\n    end\n    always_comb begin\n        if (raddr1 == '0)                                    rdata1 = '0;\n        else if (BYPASS && we && waddr == raddr1)            rdata1 = wdata;\n        else                                                 rdata1 = regs[raddr1];\n        if (raddr2 == '0)                                    rdata2 = '0;\n        else if (BYPASS && we && waddr == raddr2)            rdata2 = wdata;\n        else                                                 rdata2 = regs[raddr2];\n    end\nendmodule\n"
+ },
+ {
+  "name": "rom",
+  "filename": "rom.sv",
+  "category": "Memory",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Original ROM was permanently all zeros, with no way to load contents.",
+  "notes": "Original ROM was permanently all zeros, with no way to load contents. Added INIT_FILE (loaded with $readmemh). Verified with a hex file and with the default.",
+  "code": "// Asynchronous-read ROM. Contents come from a hex file (one word per line,\n// $readmemh format) given by INIT_FILE; all-zero if INIT_FILE is empty.\nmodule rom #(\n    parameter int    WIDTH     = 8,\n    parameter int    DEPTH     = 16,\n    parameter string INIT_FILE = \"\"\n)(\n    input  logic [$clog2(DEPTH)-1:0] addr,\n    output logic [WIDTH-1:0]         data\n);\n    logic [WIDTH-1:0] mem [0:DEPTH-1];\n    initial begin\n        for (int i = 0; i < DEPTH; i++) mem[i] = '0;\n        if (INIT_FILE != \"\") $readmemh(INIT_FILE, mem);\n    end\n    assign data = mem[addr];\nendmodule\n"
+ },
+ {
+  "name": "single_port_ram",
+  "filename": "single_port_ram.sv",
+  "category": "Memory",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Documented read-first behaviour.",
+  "code": "// Single-port synchronous RAM, read-first: on a write cycle dout shows the\n// OLD contents of the addressed word. DEPTH >= 2.\nmodule single_port_ram #(\n    parameter int WIDTH = 8,\n    parameter int DEPTH = 256\n)(\n    input  logic                     clk, we,\n    input  logic [$clog2(DEPTH)-1:0] addr,\n    input  logic [WIDTH-1:0]         din,\n    output logic [WIDTH-1:0]         dout\n);\n    logic [WIDTH-1:0] mem [0:DEPTH-1];\n    always_ff @(posedge clk) begin\n        if (we) mem[addr] <= din;\n        dout <= mem[addr];\n    end\nendmodule\n"
+ },
+ {
+  "name": "async_fifo",
+  "filename": "async_fifo.sv",
+  "category": "FIFO",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "full/empty were computed from the current pointers, so the flags lagged one cycle and the FIFO could overflow or underflow.",
+  "notes": "full/empty were computed from the current pointers, so the flags lagged one cycle and the FIFO could overflow or underflow. They are now computed from the next Gray pointers. Verified: capacity stops at exactly 16, no underflow, 400 cycles of random traffic with zero mismatches.",
+  "code": "// Asynchronous FIFO (Cummings-style, Gray-coded pointers)\n// - DEPTH must be a power of 2\n// - rdata is registered: valid the cycle AFTER r_en is accepted\n// - wfull / rempty are registered and computed from the NEXT pointers (fixes flag lag)\nmodule async_fifo #(\n  parameter int WIDTH = 8,\n  parameter int DEPTH = 16\n)(\n  // write domain\n  input  logic             wclk, wrst,\n  input  logic             w_en,\n  input  logic [WIDTH-1:0] wdata,\n  output logic             wfull,\n  // read domain\n  input  logic             rclk, rrst,\n  input  logic             r_en,\n  output logic [WIDTH-1:0] rdata,\n  output logic             rempty\n);\n  localparam int AW = $clog2(DEPTH);\n  logic [WIDTH-1:0] mem [0:DEPTH-1];\n  logic [AW:0] wbin, wbin_next, wgray, wgray_next;\n  logic [AW:0] rbin, rbin_next, rgray, rgray_next;\n  logic [AW:0] rgray_wq1, rgray_wq2;   // read ptr synced into write domain\n  logic [AW:0] wgray_rq1, wgray_rq2;   // write ptr synced into read domain\n  wire winc = w_en && !wfull;\n  wire rinc = r_en && !rempty;\n  // ---------------- write domain ----------------\n  assign wbin_next  = wbin + (AW+1)'(winc);\n  assign wgray_next = (wbin_next >> 1) ^ wbin_next;\n  wire wfull_val = (wgray_next == {~rgray_wq2[AW:AW-1], rgray_wq2[AW-2:0]});\n  always_ff @(posedge wclk) begin\n    if (winc) mem[wbin[AW-1:0]] <= wdata;\n    if (wrst) begin\n      wbin <= '0; wgray <= '0; wfull <= 1'b0;\n    end else begin\n      wbin <= wbin_next; wgray <= wgray_next; wfull <= wfull_val;\n    end\n  end\n  // read ptr -> write domain (2-flop sync)\n  always_ff @(posedge wclk)\n    if (wrst) {rgray_wq2, rgray_wq1} <= '0;\n    else      {rgray_wq2, rgray_wq1} <= {rgray_wq1, rgray};\n  // ---------------- read domain ----------------\n  assign rbin_next  = rbin + (AW+1)'(rinc);\n  assign rgray_next = (rbin_next >> 1) ^ rbin_next;\n  wire rempty_val = (rgray_next == wgray_rq2);\n  always_ff @(posedge rclk) begin\n    if (rrst) begin\n      rbin <= '0; rgray <= '0; rempty <= 1'b1; rdata <= '0;\n    end else begin\n      if (rinc) rdata <= mem[rbin[AW-1:0]];\n      rbin <= rbin_next; rgray <= rgray_next; rempty <= rempty_val;\n    end\n  end\n  // write ptr -> read domain (2-flop sync)\n  always_ff @(posedge rclk)\n    if (rrst) {wgray_rq2, wgray_rq1} <= '0;\n    else      {wgray_rq2, wgray_rq1} <= {wgray_rq1, wgray};\nendmodule\n"
+ },
+ {
+  "name": "sync_fifo",
+  "filename": "sync_fifo.sv",
+  "category": "FIFO",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Pointers wrapped at 2^AW, so any DEPTH that is not a power of two corrupted data after the first lap (measured on the original at DEPTH=5: 3 wrong words in two rounds).",
+  "notes": "Pointers wrapped at 2^AW, so any DEPTH that is not a power of two corrupted data after the first lap (measured on the original at DEPTH=5: 3 wrong words in two rounds). Pointers now wrap at DEPTH-1. Verified at DEPTH 2, 4, 5, 16 with a scoreboard.",
+  "code": "// Synchronous FIFO, any DEPTH >= 2. dout is registered: valid the cycle\n// AFTER rd_en is accepted. Writes when full and reads when empty are ignored.\n// A simultaneous read+write while full performs the read only; while empty,\n// the write only.\nmodule sync_fifo #(\n    parameter int WIDTH = 8,\n    parameter int DEPTH = 16\n)(\n    input  logic             clk, rst,\n    input  logic             wr_en, rd_en,\n    input  logic [WIDTH-1:0] din,\n    output logic [WIDTH-1:0] dout,\n    output logic             full, empty\n);\n    localparam int AW = $clog2(DEPTH);\n    initial if (DEPTH < 2) $error(\"sync_fifo: DEPTH must be >= 2\");\n    logic [WIDTH-1:0] mem [0:DEPTH-1];\n    logic [AW:0]      count;\n    logic [AW-1:0]    wp, rp;\n    wire do_wr = wr_en && !full;\n    wire do_rd = rd_en && !empty;\n    assign full  = (count == (AW+1)'(DEPTH));\n    assign empty = (count == '0);\n    always_ff @(posedge clk) begin\n        if (rst) begin\n            wp    <= '0;\n            rp    <= '0;\n            count <= '0;\n            dout  <= '0;\n        end else begin\n            if (do_wr) begin\n                mem[wp] <= din;\n                wp      <= (wp == AW'(DEPTH-1)) ? '0 : wp + 1'b1;\n            end\n            if (do_rd) begin\n                dout <= mem[rp];\n                rp   <= (rp == AW'(DEPTH-1)) ? '0 : rp + 1'b1;\n            end\n            case ({do_wr, do_rd})\n                2'b10:   count <= count + 1'b1;\n                2'b01:   count <= count - 1'b1;\n                default: count <= count;\n            endcase\n        end\n    end\nendmodule\n"
+ },
+ {
+  "name": "uart_rx",
+  "filename": "uart_rx.sv",
+  "category": "Communication",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Real bug: the first sample was taken in the middle of the START bit and stored as data bit 0, so every byte came out shifted left (sent 0xA5, original received 0x4A).",
+  "notes": "Real bug: the first sample was taken in the middle of the START bit and stored as data bit 0, so every byte came out shifted left (sent 0xA5, original received 0x4A). Also the rx input was not synchronized and the stop bit was never checked. Rewritten as an IDLE/START/DATA/STOP state machine with a 2-flop input synchronizer, start-bit glitch rejection and a new frame_err output. Verified in loopback at CLK_PER_BIT 7, 8 and 434.",
+  "code": "// UART receiver: 8N1, LSB first. CLK_PER_BIT = clk_freq / baud (>= 2).\n// rx is synchronised internally. The start bit is re-checked at its middle\n// (glitches are rejected) and every later bit is sampled at its centre.\n// valid pulses for one cycle when data is ready; frame_err pulses with it\n// if the stop bit was not high.\nmodule uart_rx #(\n    parameter int CLK_PER_BIT = 434\n)(\n    input  logic       clk, rst,\n    input  logic       rx,\n    output logic [7:0] data,\n    output logic       valid,\n    output logic       frame_err\n);\n    localparam int CW   = $clog2(CLK_PER_BIT);\n    localparam int HALF = CLK_PER_BIT / 2;\n    initial if (CLK_PER_BIT < 2) $error(\"uart_rx: CLK_PER_BIT must be >= 2\");\n    typedef enum logic [1:0] {IDLE, START, DATA, STOP} state_t;\n    state_t state;\n    logic [CW-1:0] count;\n    logic [2:0]    bit_idx;\n    logic [7:0]    shift;\n    logic          rx_s1, rx_s2;\n    always_ff @(posedge clk) begin\n        if (rst) begin\n            rx_s1 <= 1'b1;\n            rx_s2 <= 1'b1;\n        end else begin\n            rx_s1 <= rx;\n            rx_s2 <= rx_s1;\n        end\n    end\n    always_ff @(posedge clk) begin\n        valid     <= 1'b0;\n        frame_err <= 1'b0;\n        if (rst) begin\n            state   <= IDLE;\n            count   <= '0;\n            bit_idx <= '0;\n            shift   <= '0;\n            data    <= '0;\n        end else begin\n            case (state)\n                IDLE: begin\n                    count <= '0;\n                    if (!rx_s2) state <= START;           // falling edge seen\n                end\n                START: begin                              // wait to the middle of the start bit\n                    if (count == CW'(HALF - 1)) begin\n                        count <= '0;\n                        if (!rx_s2) begin\n                            bit_idx <= '0;\n                            state   <= DATA;\n                        end else\n                            state <= IDLE;                // glitch, not a real start bit\n                    end else\n                        count <= count + 1'b1;\n                end\n                DATA: begin\n                    if (count == CW'(CLK_PER_BIT - 1)) begin\n                        count <= '0;\n                        shift <= {rx_s2, shift[7:1]};     // LSB arrives first\n                        if (bit_idx == 3'd7) state <= STOP;\n                        else                 bit_idx <= bit_idx + 1'b1;\n                    end else\n                        count <= count + 1'b1;\n                end\n                STOP: begin\n                    if (count == CW'(CLK_PER_BIT - 1)) begin\n                        count     <= '0;\n                        data      <= shift;\n                        valid     <= 1'b1;\n                        frame_err <= ~rx_s2;\n                        state     <= IDLE;\n                    end else\n                        count <= count + 1'b1;\n                end\n                default: state <= IDLE;\n            endcase\n        end\n    end\nendmodule\n"
+ },
+ {
+  "name": "uart_tx",
+  "filename": "uart_tx.sv",
+  "category": "Communication",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic traced and verified correct (8N1, LSB first, gapless back-to-back frames).",
+  "notes": "Logic traced and verified correct (8N1, LSB first, gapless back-to-back frames). Added a CLK_PER_BIT >= 2 check and comments.",
+  "code": "// UART transmitter: 8N1, LSB first. CLK_PER_BIT = clk_freq / baud (>= 2).\n// Pulse start for one cycle while busy = 0; data is latched on that cycle.\n// busy stays high through the stop bit, so back-to-back frames are gapless.\nmodule uart_tx #(\n    parameter int CLK_PER_BIT = 434\n)(\n    input  logic       clk, rst,\n    input  logic       start,\n    input  logic [7:0] data,\n    output logic       tx,\n    output logic       busy\n);\n    localparam int CW = $clog2(CLK_PER_BIT);\n    initial if (CLK_PER_BIT < 2) $error(\"uart_tx: CLK_PER_BIT must be >= 2\");\n    logic [CW-1:0] count;\n    logic [3:0]    bit_idx;\n    logic [9:0]    shreg;            // {stop, d7..d0, start}\n    always_ff @(posedge clk) begin\n        if (rst) begin\n            tx      <= 1'b1;\n            busy    <= 1'b0;\n            count   <= '0;\n            bit_idx <= '0;\n            shreg   <= '0;\n        end else if (start && !busy) begin\n            shreg   <= {1'b1, data, 1'b0};\n            busy    <= 1'b1;\n            count   <= '0;\n            bit_idx <= '0;\n            tx      <= 1'b0;                          // start bit\n        end else if (busy) begin\n            if (count == CW'(CLK_PER_BIT - 1)) begin\n                count   <= '0;\n                bit_idx <= bit_idx + 1'b1;\n                shreg   <= {1'b1, shreg[9:1]};\n                tx      <= shreg[1];                  // next bit: d0..d7, then stop\n                if (bit_idx == 4'd9) begin            // stop bit finished\n                    busy <= 1'b0;\n                    tx   <= 1'b1;\n                end\n            end else begin\n                count <= count + 1'b1;\n            end\n        end\n    end\nendmodule\n"
+ },
+ {
+  "name": "handshake_synchronizer",
+  "filename": "handshake_synchronizer.sv",
+  "category": "Clock-domain Crossing",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Original was a copy of the pulse synchronizer: no data, no acknowledge.",
+  "notes": "Original was a copy of the pulse synchronizer: no data, no acknowledge. Now a real toggle-based req/ack handshake that moves a multi-bit word across clock domains (ports changed: src_send/src_data/src_busy/src_done and dst_data/dst_valid). 10 of 10 words verified.",
+  "code": "// Toggle-based req/ack handshake synchronizer for MULTI-BIT data across clock domains.\n// Data is held stable in the source domain until the destination acknowledges,\n// so only the 1-bit req/ack toggles cross the boundary (through 2-flop syncs).\n// Pulse src_send only while src_busy is low; src_data is latched on that cycle.\nmodule handshake_synchronizer #(\n  parameter int WIDTH = 8\n)(\n  input  logic             src_clk, src_rst,\n  input  logic             src_send,\n  input  logic [WIDTH-1:0] src_data,\n  output logic             src_busy,   // high from send until ack returns\n  output logic             src_done,   // 1-cycle pulse when transfer completes\n  input  logic             dst_clk, dst_rst,\n  output logic [WIDTH-1:0] dst_data,\n  output logic             dst_valid   // 1-cycle pulse, dst_data valid\n);\n  logic [WIDTH-1:0] data_hold;\n  logic req_t, ack_t;\n  logic rq1, rq2, rq2d;   // req_t synced to dst\n  logic aq1, aq2, aq2d;   // ack_t synced to src\n  assign src_busy = (req_t != aq2);\n  // source domain\n  always_ff @(posedge src_clk) begin\n    if (src_rst) begin\n      req_t <= 1'b0; data_hold <= '0;\n      aq1 <= 1'b0; aq2 <= 1'b0; aq2d <= 1'b0; src_done <= 1'b0;\n    end else begin\n      if (src_send && !src_busy) begin\n        data_hold <= src_data;\n        req_t     <= ~req_t;\n      end\n      aq1 <= ack_t; aq2 <= aq1; aq2d <= aq2;\n      src_done <= aq2 ^ aq2d;\n    end\n  end\n  // destination domain\n  always_ff @(posedge dst_clk) begin\n    if (dst_rst) begin\n      rq1 <= 1'b0; rq2 <= 1'b0; rq2d <= 1'b0;\n      ack_t <= 1'b0; dst_data <= '0; dst_valid <= 1'b0;\n    end else begin\n      rq1 <= req_t; rq2 <= rq1; rq2d <= rq2;\n      dst_valid <= 1'b0;\n      if (rq2 ^ rq2d) begin\n        dst_data  <= data_hold;   // stable: source is busy until ack\n        dst_valid <= 1'b1;\n        ack_t     <= rq2;\n      end\n    end\n  end\nendmodule\n"
+ },
+ {
+  "name": "pulse_synchronizer",
+  "filename": "pulse_synchronizer.sv",
+  "category": "Clock-domain Crossing",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Documented the minimum pulse spacing and the reset requirement; added ASYNC_REG. 25 of 25 pulses delivered across 10 ns / 26 ns clocks.",
+  "code": "// Toggle-based pulse synchronizer: a 1-cycle pulse in src_clk becomes a\n// 1-cycle pulse in dst_clk. Source pulses must be spaced by at least\n// ~3 dst_clk cycles + 1 src_clk cycle or they can merge. Reset both domains together.\nmodule pulse_synchronizer (\n    input  logic src_clk, src_rst,\n    input  logic src_pulse,\n    input  logic dst_clk, dst_rst,\n    output logic dst_pulse\n);\n    logic toggle;\n    (* ASYNC_REG = \"TRUE\" *) logic q1, q2;\n    logic q2d;\n    always_ff @(posedge src_clk) begin\n        if (src_rst)        toggle <= 1'b0;\n        else if (src_pulse) toggle <= ~toggle;\n    end\n    always_ff @(posedge dst_clk) begin\n        if (dst_rst) begin\n            q1 <= 1'b0; q2 <= 1'b0; q2d <= 1'b0; dst_pulse <= 1'b0;\n        end else begin\n            q1 <= toggle; q2 <= q1; q2d <= q2;\n            dst_pulse <= q2 ^ q2d;\n        end\n    end\nendmodule\n"
+ },
+ {
+  "name": "two_flop_synchronizer",
+  "filename": "two_flop_synchronizer.sv",
+  "category": "Clock-domain Crossing",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "Logic was correct.",
+  "notes": "Logic was correct. Added a STAGES parameter and the ASYNC_REG attribute (keeps the flops adjacent in Vivado). Single-bit signals only.",
+  "code": "// Two-flop synchronizer for a SINGLE-BIT level signal entering clk's domain.\n// Never use it on multi-bit buses (use handshake or async FIFO instead).\nmodule two_flop_synchronizer #(\n    parameter int STAGES = 2\n)(\n    input  logic clk, rst,\n    input  logic async_in,\n    output logic sync_out\n);\n    (* ASYNC_REG = \"TRUE\" *) logic [STAGES-1:0] sr;\n    always_ff @(posedge clk) begin\n        if (rst) sr <= '0;\n        else     sr <= {sr[STAGES-2:0], async_in};\n    end\n    assign sync_out = sr[STAGES-1];\nendmodule\n"
+ },
+ {
+  "name": "axi_lite_if",
+  "filename": "axi_lite_if.sv",
+  "category": "SystemVerilog",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "Added the AWPROT and ARPROT signals that AXI4-Lite defines, and aclk/aresetn to both modports.",
+  "notes": "Added the AWPROT and ARPROT signals that AXI4-Lite defines, and aclk/aresetn to both modports.",
+  "code": "// AXI4-Lite interface (all five channels) with master/slave modports.\n// Valid/ready handshakes follow the AXI rules; drive everything from aclk.\ninterface axi_lite_if #(\n    parameter int ADDR_WIDTH = 32,\n    parameter int DATA_WIDTH = 32\n)(\n    input logic aclk,\n    input logic aresetn\n);\n    // write address\n    logic [ADDR_WIDTH-1:0]   awaddr;\n    logic [2:0]              awprot;\n    logic                    awvalid, awready;\n    // write data\n    logic [DATA_WIDTH-1:0]   wdata;\n    logic [DATA_WIDTH/8-1:0] wstrb;\n    logic                    wvalid, wready;\n    // write response\n    logic [1:0]              bresp;\n    logic                    bvalid, bready;\n    // read address\n    logic [ADDR_WIDTH-1:0]   araddr;\n    logic [2:0]              arprot;\n    logic                    arvalid, arready;\n    // read data\n    logic [DATA_WIDTH-1:0]   rdata;\n    logic [1:0]              rresp;\n    logic                    rvalid, rready;\n    modport master (\n        input  aclk, aresetn,\n        output awaddr, awprot, awvalid, wdata, wstrb, wvalid, bready,\n               araddr, arprot, arvalid, rready,\n        input  awready, wready, bresp, bvalid, arready, rdata, rresp, rvalid\n    );\n    modport slave (\n        input  aclk, aresetn,\n        input  awaddr, awprot, awvalid, wdata, wstrb, wvalid, bready,\n               araddr, arprot, arvalid, rready,\n        output awready, wready, bresp, bvalid, arready, rdata, rresp, rvalid\n    );\nendinterface\n"
+ },
+ {
+  "name": "enum_fsm_alu",
+  "filename": "enum_fsm_alu.sv",
+  "category": "SystemVerilog",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Did not compile in strict tools (integer assigned to enum without a cast).",
+  "notes": "Did not compile in strict tools (integer assigned to enum without a cast). Added the explicit cast and a default branch. Note: it is an ALU with an enum opcode, not an FSM. Exhaustively verified.",
+  "code": "// Small ALU that uses an enum-typed opcode (a typed-enum example, not an FSM).\nmodule enum_fsm_alu (\n    input  logic [3:0] a, b,\n    input  logic [1:0] op,\n    output logic [3:0] y,\n    output logic       zero\n);\n    typedef enum logic [1:0] {ADD, SUB, AND_OP, OR_OP} op_t;\n    op_t operation;\n    always_comb begin\n        operation = op_t'(op);          // explicit cast: int -> enum\n        case (operation)\n            ADD:     y = a + b;\n            SUB:     y = a - b;\n            AND_OP:  y = a & b;\n            OR_OP:   y = a | b;\n            default: y = '0;\n        endcase\n    end\n    assign zero = (y == '0);\nendmodule\n"
+ },
+ {
+  "name": "sv_assertions_example",
+  "filename": "sv_assertions_example.sv",
+  "category": "SystemVerilog",
+  "language": "SystemVerilog",
+  "status": "VERIFIED",
+  "description": "Semantics unchanged.",
+  "notes": "Semantics unchanged. Added an assertion label, an error message and a cover property. NOTE: neither Icarus nor Verilator 5.020 supports the ##[1:3] range delay, so this file was reviewed by hand against IEEE 1800 but NOT simulated here; run it in your simulator.",
+  "code": "// Every req must be followed by ack within 1 to 3 clock cycles.\nmodule sv_assertions_example (\n    input logic clk, rst,\n    input logic req, ack\n);\n    property p_req_gets_ack;\n        @(posedge clk) disable iff (rst)\n            req |-> ##[1:3] ack;\n    endproperty\n    a_req_gets_ack: assert property (p_req_gets_ack)\n        else $error(\"ack did not follow req within 3 cycles\");\n    c_req_gets_ack: cover property (p_req_gets_ack);\nendmodule\n"
+ },
+ {
+  "name": "sv_package_example",
+  "filename": "sv_package_example.sv",
+  "category": "SystemVerilog",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "DATA_WIDTH was declared after the function and the function hard-coded 32 bits.",
+  "notes": "DATA_WIDTH was declared after the function and the function hard-coded 32 bits. DATA_WIDTH is now declared first and drives the function argument. Verified.",
+  "code": "package sv_package_example;\n    parameter int DATA_WIDTH = 32;\n    typedef enum logic [1:0] {IDLE, BUSY, DONE, ERROR} status_t;\n    // XOR-reduction parity: 1 when the number of set bits is odd\n    function automatic logic parity(input logic [DATA_WIDTH-1:0] data);\n        return ^data;\n    endfunction\nendpackage\n"
+ },
+ {
+  "name": "clock_generator",
+  "filename": "clock_generator.sv",
+  "category": "Verification",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "PERIOD/2 was integer division, so odd periods drifted.",
+  "notes": "PERIOD/2 was integer division, so odd periods drifted. PERIOD is now real, with a timescale.",
+  "code": "`timescale 1ns/1ps\n// Free-running clock. PERIOD is in ns (real, so odd/fractional periods are exact).\nmodule clock_generator #(\n    parameter real PERIOD = 10.0\n)(\n    output logic clk\n);\n    initial begin\n        clk = 1'b0;\n        forever #(PERIOD/2.0) clk = ~clk;\n    end\nendmodule\n"
+ },
+ {
+  "name": "reset_generator",
+  "filename": "reset_generator.sv",
+  "category": "Verification",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "Used blocking assignments in a clocked block (race with the DUT) and the reset length was ambiguous.",
+  "notes": "Used blocking assignments in a clocked block (race with the DUT) and the reset length was ambiguous. Now non-blocking and defined: rst is high for exactly CYCLES rising edges. Verified.",
+  "code": "`timescale 1ns/1ps\n// Active-high reset asserted from time 0 and held for CYCLES rising clock edges\n// (the DUT samples rst = 1 on exactly CYCLES edges). Non-blocking updates avoid\n// races with logic clocked by the same edge.\nmodule reset_generator #(\n    parameter int CYCLES = 2\n)(\n    input  logic clk,\n    output logic rst\n);\n    int count;\n    initial begin\n        rst   = 1'b1;\n        count = 0;\n    end\n    always @(posedge clk) begin\n        if (count < CYCLES) count <= count + 1;\n        if (count == CYCLES - 1) rst <= 1'b0;\n    end\nendmodule\n"
+ },
+ {
+  "name": "tb_full_adder",
+  "filename": "tb_full_adder.sv",
+  "category": "Verification",
+  "language": "SystemVerilog",
+  "status": "FIXED",
+  "description": "The test was wrong: it compared {cout,sum} to the loop index i, which fails for i=3. $fatal(\"msg\") is also illegal (first argument must be a number).",
+  "notes": "The test was wrong: it compared {cout,sum} to the loop index i, which fails for i=3. $fatal(\"msg\") is also illegal (first argument must be a number). Now compares against a+b+cin and uses $fatal(1, ...).",
+  "code": "`timescale 1ns/1ps\nmodule tb_full_adder;\n    logic a, b, cin;\n    logic sum, cout;\n    logic [1:0] expected;\n    full_adder dut (.a(a), .b(b), .cin(cin), .sum(sum), .cout(cout));\n    initial begin\n        for (int i = 0; i < 8; i++) begin\n            {a, b, cin} = 3'(i);\n            #1;\n            expected = 2'(a) + 2'(b) + 2'(cin);      // arithmetic reference\n            if ({cout, sum} !== expected)\n                $fatal(1, \"full_adder FAIL: a=%b b=%b cin=%b -> cout=%b sum=%b\",\n                       a, b, cin, cout, sum);\n        end\n        $display(\"tb_full_adder PASS\");\n        $finish;\n    end\nendmodule\n"
+ },
+ {
+  "name": "tb_sync_fifo",
+  "filename": "tb_sync_fifo.sv",
+  "category": "Verification",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "Original wrote and read one word and checked nothing else.",
+  "notes": "Original wrote and read one word and checked nothing else. Now a self-checking scoreboard: overfill, over-drain, 2000 random cycles, full/empty flag checks every cycle, selectable DEPTH.",
+  "code": "`timescale 1ns/1ps\n// Self-checking sync FIFO testbench (scoreboard + flag checks).\n// Run with different depths:  -Ptb_sync_fifo.DEPTH=4  /  =5 (non power of two)\nmodule tb_sync_fifo;\n    parameter int WIDTH = 8;\n    parameter int DEPTH = 4;\n    logic             clk = 0, rst = 1, wr_en = 0, rd_en = 0;\n    logic [WIDTH-1:0] din = '0, dout;\n    logic             full, empty;\n    int               errors = 0;\n    always #5 clk = ~clk;\n    sync_fifo #(.WIDTH(WIDTH), .DEPTH(DEPTH)) dut (\n        .clk(clk), .rst(rst), .wr_en(wr_en), .rd_en(rd_en),\n        .din(din), .dout(dout), .full(full), .empty(empty));\n    // scoreboard\n    logic [WIDTH-1:0] q [$];\n    logic [WIDTH-1:0] exp_d;\n    logic             chk = 0;\n    always @(posedge clk) begin\n        if (chk && dout !== exp_d) begin\n            $display(\"DATA MISMATCH t=%0t dout=%0h exp=%0h\", $time, dout, exp_d);\n            errors++;\n        end\n        chk = 0;\n        if (rst) q.delete();\n        else begin\n            if (rd_en && q.size() > 0) begin exp_d = q.pop_front(); chk = 1; end\n            // write uses pre-edge occupancy: a write on a full FIFO is dropped\n            if (wr_en && (q.size() + (chk ? 1 : 0)) < DEPTH) q.push_back(din);\n        end\n    end\n    // flag check, mid-cycle\n    always @(negedge clk) if (!rst) begin\n        if (full  !== (q.size() == DEPTH)) begin $display(\"FULL flag wrong t=%0t\",  $time); errors++; end\n        if (empty !== (q.size() == 0))     begin $display(\"EMPTY flag wrong t=%0t\", $time); errors++; end\n    end\n    initial begin\n        repeat (3) @(posedge clk);\n        #1 rst = 0;\n        // fill beyond capacity\n        repeat (DEPTH + 3) begin @(posedge clk); #1 wr_en = 1; din = $urandom; end\n        @(posedge clk); #1 wr_en = 0;\n        // drain beyond empty\n        repeat (DEPTH + 3) begin @(posedge clk); #1 rd_en = 1; end\n        @(posedge clk); #1 rd_en = 0;\n        // random mixed traffic\n        repeat (2000) begin\n            @(posedge clk); #1;\n            wr_en = ($urandom_range(0, 99) < 55);\n            rd_en = ($urandom_range(0, 99) < 45);\n            din   = $urandom;\n        end\n        @(posedge clk); #1 wr_en = 0; rd_en = 0;\n        repeat (3) @(posedge clk);\n        if (errors == 0) $display(\"tb_sync_fifo PASS (DEPTH=%0d)\", DEPTH);\n        else             $fatal(1, \"tb_sync_fifo FAIL (%0d errors)\", errors);\n        $finish;\n    end\nendmodule\n"
+ },
+ {
+  "name": "tb_up_down_counter",
+  "filename": "tb_up_down_counter.sv",
+  "category": "Verification",
+  "language": "SystemVerilog",
+  "status": "IMPROVED",
+  "description": "Now compares against a reference model every cycle and covers wrap in both directions, hold and reset.",
+  "notes": "Now compares against a reference model every cycle and covers wrap in both directions, hold and reset.",
+  "code": "`timescale 1ns/1ps\nmodule tb_up_down_counter;\n    localparam int WIDTH = 4;\n    logic             clk = 0, rst = 1, en = 0, up = 1;\n    logic [WIDTH-1:0] q;\n    logic [WIDTH-1:0] model;\n    int               errors = 0;\n    always #5 clk = ~clk;\n    up_down_counter #(.WIDTH(WIDTH)) dut (.clk(clk), .rst(rst), .en(en), .up(up), .q(q));\n    // reference model, updated on the same edge using pre-edge inputs\n    always @(posedge clk) begin\n        if (rst)     model <= '0;\n        else if (en) model <= up ? model + 1'b1 : model - 1'b1;\n    end\n    // compare every cycle just before the next edge\n    always @(negedge clk) begin\n        if (q !== model) begin\n            $display(\"MISMATCH t=%0t q=%0d model=%0d\", $time, q, model);\n            errors++;\n        end\n    end\n    initial begin\n        repeat (2) @(posedge clk);\n        #1 rst = 0; en = 1; up = 1;\n        repeat (20) @(posedge clk);          // counts up and wraps 15 -> 0\n        #1 up = 0;\n        repeat (20) @(posedge clk);          // counts down and wraps 0 -> 15\n        #1 en = 0;\n        repeat (4) @(posedge clk);           // holds\n        #1 rst = 1;\n        repeat (2) @(posedge clk);\n        #1;\n        if (q !== '0) errors++;\n        if (errors == 0) $display(\"tb_up_down_counter PASS\");\n        else             $fatal(1, \"tb_up_down_counter FAIL (%0d errors)\", errors);\n        $finish;\n    end\nendmodule\n"
+ }
+]
